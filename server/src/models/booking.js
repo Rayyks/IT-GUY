@@ -4,8 +4,8 @@ const bookingSchema = new mongoose.Schema(
   {
     bookingId: {
       type: String,
-      unique: true, // Ensure it's unique
       required: true,
+      unique: true,
     },
     userId: {
       type: mongoose.Schema.Types.ObjectId,
@@ -27,12 +27,24 @@ const bookingSchema = new mongoose.Schema(
       default: null,
     },
     image: { type: String, default: null },
+    video: { type: String, default: null },
     status: {
       type: String,
       enum: ["pending", "in-progress", "completed", "cancelled"],
       default: "pending",
     },
     cancelReason: { type: String, default: null },
+    totalAmount: { type: Number, default: null },
+    paymentStatus: {
+      type: String,
+      enum: ["pending", "paid", "failed"],
+      default: "pending",
+    },
+    paymentMethod: {
+      type: String,
+      enum: ["cash_on_delivery", "transfer", "gopay", "dana"],
+      required: true,
+    },
   },
   { timestamps: true }
 );

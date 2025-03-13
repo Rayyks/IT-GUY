@@ -14,17 +14,17 @@ const paymentSchema = new mongoose.Schema(
     },
     amount: {
       type: Number,
-      required: true,
+      default: 0,
     },
-    paymentMethod: {
-      type: String,
-      enum: ["cash_on_delivery", "transfer"],
-      required: true,
-    },
+    paymentMethod: { type: String, required: true },
     status: {
       type: String,
       enum: ["pending", "paid", "failed"],
       default: "pending",
+    },
+    transactionId: {
+      type: String, // Store transaction ID from Xendit
+      default: null,
     },
   },
   { timestamps: true }

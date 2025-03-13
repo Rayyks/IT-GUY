@@ -5,12 +5,18 @@ import {
   loginUser,
   requestAccountDeletion,
   cancelAccountDeletion,
+  verifyEmail,
+  resendVerificationEmail,
 } from "../controller/auth.controller.js";
 
 const router = express.Router();
 
 // Public routes
 router.post("/register", registerUser);
+
+router.get("/verify-email/:token", verifyEmail);
+router.post("/resend-verification", resendVerificationEmail);
+
 router.post("/login", loginUser);
 
 // Private routes (Require authentication)

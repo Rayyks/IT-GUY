@@ -1,28 +1,33 @@
 import nodemailer from "nodemailer";
-import { env } from "../config/env.js";
+import dotenv from "dotenv";
+dotenv.config();
 
 const transporter = nodemailer.createTransport({
-  service: "gmail",
+  service: "Gmail",
   auth: {
-    user: env.EMAIL_USER,
-    pass: env.EMAIL_PASS,
+    user: process.env.SMTP_EMAIL,
+    pass: process.env.SMTP_PASSWORD, // Your Gmail password or app password
   },
 });
 
-export const sendEmail = async (to, subject, text) => {
-  try {
-    const mailOptions = {
-      from: env.EMAIL_USER,
-      to,
-      subject,
-      text,
-    };
+export const sendVerificationEmail = async (email, token) => {
+  const verificationLink = `${process.env.BASE_URL}/api/auth/verify-email/${token}`;
 
-    const info = await transporter.sendMail(mailOptions);
-    console.log(`Email sent: ${info.response}`);
-    return true;
+  const mailOptions = {
+    from: process.env.SMTP_EMAIL,
+    to: email,
+    subject: "Verify Your Email",
+    html: `
+      <h2>Email Verification</h2>
+      <p>Click the link below to verify your email:</p>
+      <a href="${verificationLink}">${verificationLink}</a>
+    `,
+  };
+
+  try {
+    await transporter.sendMail(mailOptions);
+    console.log(`📩 Verification email sent to ${email}`);
   } catch (error) {
-    console.error(`Error sending email: ${error.message}`);
-    return false;
+    console.error("❌ Error sending email:", error);
   }
 };

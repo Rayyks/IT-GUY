@@ -33,13 +33,18 @@ export const protect = async (req, res, next) => {
 /**
  * @desc Restrict access to only Admins or Techs
  */
-export const adminOrTech = async (req, res, next) => {
-  if (!req.user || (req.user.role !== "admin" && req.user.role !== "tech")) {
-    return errorResponse(
-      res,
-      { message: "Access denied. Admin or Tech only." },
-      403
-    );
+export const adminOnly = (req, res, next) => {
+  if (req.user.role !== "admin") {
+    return res.status(403).json({ message: "Access denied. Admin only." });
+  }
+  next();
+};
+
+export const adminOrTech = (req, res, next) => {
+  if (req.user.role !== "admin" && req.user.role !== "tech") {
+    return res
+      .status(403)
+      .json({ message: "Access denied. Admin or Tech only." });
   }
   next();
 };

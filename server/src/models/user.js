@@ -2,12 +2,8 @@ import mongoose from "mongoose";
 
 const userSchema = new mongoose.Schema(
   {
-    username: {
-      type: String,
-      required: true,
-      unique: true,
-      trim: true,
-    },
+    userId: { type: String, required: true, unique: true },
+    username: { type: String, required: true, unique: true, trim: true },
     email: {
       type: String,
       required: true,
@@ -15,17 +11,14 @@ const userSchema = new mongoose.Schema(
       trim: true,
       lowercase: true,
     },
-    password: {
-      type: String,
-      required: true,
-    },
-    location: {
-      type: String,
-      default: "",
-    },
-    isAdmin: {
-      type: Boolean,
-      default: false,
+    password: { type: String, required: true },
+    location: { type: String, default: "" },
+    role: { type: String, enum: ["user", "admin", "tech"], default: "user" },
+    isVerified: { type: Boolean, default: false },
+    verificationToken: { type: String, default: null },
+    deletionRequest: {
+      reason: { type: String, default: null },
+      requestedAt: { type: Date, default: null },
     },
   },
   { timestamps: true }
