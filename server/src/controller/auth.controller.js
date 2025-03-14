@@ -1,33 +1,29 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import crypto from "crypto";
 import User from "../models/User.js";
 import { env } from "../config/env.js";
 import { successResponse, errorResponse } from "../utils/responseHandler.js";
 import { generateUniqueId } from "../utils/generateUniqueId.js";
-import { sendVerificationEmail } from "../utils/sendEmail.js";
+import { sendOTPEmail } from "../utils/sendEmail.js";
 
-/**
- * @desc Register a new user
- * @route POST /api/auth/register
- * @access Public
- */
+const generateOTP = () =>
+  Math.floor(100000 + Math.random() * 900000).toString();
+
 export const registerUser = async (req, res) => {
   try {
     const { username, email, password, location } = req.body;
 
     // Check if user exists
     const existingUser = await User.findOne({ email });
-    if (existingUser) {
+    if (existingUser)
       return errorResponse(res, { message: "Email already in use" }, 400);
-    }
 
     // Hash password
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
+    const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Generate verification token
-    const verificationToken = crypto.randomBytes(32).toString("hex");
+    // Generate OTP
+    const otpCode = generateOTP();
+    const otpExpiresAt = new Date(Date.now() + 10 * 60 * 1000);
 
     // Create new user
     const newUser = new User({
@@ -36,18 +32,19 @@ export const registerUser = async (req, res) => {
       email,
       password: hashedPassword,
       location,
-      verificationToken,
+      otpCode,
+      otpExpiresAt,
     });
 
     await newUser.save();
 
-    // Send verification email
-    await sendVerificationEmail(email, verificationToken);
+    // Send OTP email
+    await sendOTPEmail(email, otpCode);
 
     return successResponse(
       res,
-      newUser,
-      "User registered. Check your email to verify your account.",
+      null,
+      "User registered. Check your email for the OTP.",
       201
     );
   } catch (error) {
@@ -56,23 +53,27 @@ export const registerUser = async (req, res) => {
 };
 
 /**
- * @desc Verify user email
+ * @desc Verify user OTP
  * @route GET /api/auth/verify-email/:token
  * @access Public
  */
-export const verifyEmail = async (req, res) => {
+export const verifyOTP = async (req, res) => {
   try {
-    const { token } = req.params;
+    const { email, otp } = req.body;
 
-    // Find user with the token
-    const user = await User.findOne({ verificationToken: token });
-    if (!user) {
-      return errorResponse(res, { message: "Invalid or expired token" }, 400);
+    // Find user
+    const user = await User.findOne({ email });
+    if (!user) return errorResponse(res, { message: "User not found" }, 404);
+
+    // Check OTP & expiry
+    if (user.otpCode !== otp || new Date() > user.otpExpiresAt) {
+      return errorResponse(res, { message: "Invalid or expired OTP" }, 400);
     }
 
-    // Activate user
+    // Mark user as verified
     user.isVerified = true;
-    user.verificationToken = null;
+    user.otpCode = null;
+    user.otpExpiresAt = null;
     await user.save();
 
     return successResponse(
@@ -86,11 +87,11 @@ export const verifyEmail = async (req, res) => {
 };
 
 /**
- * @desc Resend verification email
+ * @desc Resend OTP
  * @route POST /api/auth/resend-verification
  * @access Public
  */
-export const resendVerificationEmail = async (req, res) => {
+export const resendOTP = async (req, res) => {
   try {
     const { email } = req.body;
 
@@ -98,19 +99,22 @@ export const resendVerificationEmail = async (req, res) => {
     const user = await User.findOne({ email });
     if (!user) return errorResponse(res, { message: "User not found" }, 404);
 
-    // If already verified
+    // If already verified, no need to resend
     if (user.isVerified)
       return errorResponse(res, { message: "Email already verified" }, 400);
 
-    // Generate new token
-    const verificationToken = crypto.randomBytes(32).toString("hex");
-    user.verificationToken = verificationToken;
+    // Generate new OTP
+    const otpCode = generateOTP();
+    const otpExpiresAt = new Date(Date.now() + 10 * 60 * 1000);
+
+    user.otpCode = otpCode;
+    user.otpExpiresAt = otpExpiresAt;
     await user.save();
 
     // Send email
-    await sendVerificationEmail(user.email, verificationToken);
+    await sendOTPEmail(user.email, otpCode);
 
-    return successResponse(res, null, "Verification email sent again.");
+    return successResponse(res, null, "A new OTP has been sent to your email.");
   } catch (error) {
     return errorResponse(res, error, 500);
   }

@@ -3,21 +3,19 @@ import { protect } from "../middlewares/authMiddleware.js";
 import {
   registerUser,
   loginUser,
+  verifyOTP,
+  resendOTP,
   requestAccountDeletion,
   cancelAccountDeletion,
-  verifyEmail,
-  resendVerificationEmail,
 } from "../controller/auth.controller.js";
 
 const router = express.Router();
 
 // Public routes
 router.post("/register", registerUser);
-
-router.get("/verify-email/:token", verifyEmail);
-router.post("/resend-verification", resendVerificationEmail);
-
 router.post("/login", loginUser);
+router.post("/verify-otp", verifyOTP);
+router.post("/resend-otp", resendOTP);
 
 // Private routes (Require authentication)
 router.post("/delete", protect, requestAccountDeletion);

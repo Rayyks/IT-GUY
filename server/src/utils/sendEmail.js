@@ -3,31 +3,30 @@ import dotenv from "dotenv";
 dotenv.config();
 
 const transporter = nodemailer.createTransport({
-  service: "Gmail",
+  host: "smtp.gmail.com",
+  port: 587,
+  secure: false, // Use TLS
   auth: {
     user: process.env.SMTP_EMAIL,
-    pass: process.env.SMTP_PASSWORD, // Your Gmail password or app password
+    pass: process.env.SMTP_PASSWORD,
+  },
+  tls: {
+    rejectUnauthorized: false,
   },
 });
 
-export const sendVerificationEmail = async (email, token) => {
-  const verificationLink = `${process.env.BASE_URL}/api/auth/verify-email/${token}`;
-
+export const sendOTPEmail = async (email, otp) => {
   const mailOptions = {
-    from: process.env.SMTP_EMAIL,
+    from: `"IT.GUY Support" <${process.env.SMTP_EMAIL}>`,
     to: email,
-    subject: "Verify Your Email",
-    html: `
-      <h2>Email Verification</h2>
-      <p>Click the link below to verify your email:</p>
-      <a href="${verificationLink}">${verificationLink}</a>
-    `,
+    subject: "Your OTP Code",
+    html: `<h2>Your OTP Code</h2><p>Use this code to verify your email: <strong>${otp}</strong></p><p>This OTP expires in 10 minutes.</p>`,
   };
 
   try {
-    await transporter.sendMail(mailOptions);
-    console.log(`📩 Verification email sent to ${email}`);
+    let info = await transporter.sendMail(mailOptions);
+    console.log(`✅ Email sent to ${email}: ${info.response}`);
   } catch (error) {
-    console.error("❌ Error sending email:", error);
+    console.error("❌ Email sending error:", error);
   }
 };

@@ -15,7 +15,8 @@ const userSchema = new mongoose.Schema(
     location: { type: String, default: "" },
     role: { type: String, enum: ["user", "admin", "tech"], default: "user" },
     isVerified: { type: Boolean, default: false },
-    verificationToken: { type: String, default: null },
+    otpCode: { type: String, default: null },
+    otpExpiresAt: { type: Date, default: null },
     deletionRequest: {
       reason: { type: String, default: null },
       requestedAt: { type: Date, default: null },
