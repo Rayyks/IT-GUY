@@ -2,6 +2,7 @@ import { midtrans } from "../config/midtrans.js";
 import Payment from "../models/payment.js";
 import Booking from "../models/booking.js";
 import { successResponse, errorResponse } from "../utils/responseHandler.js";
+import { formatDate } from "../utils/formatDate.js";
 
 export const generatePaymentRequest = async (req, res) => {
   try {
@@ -53,8 +54,16 @@ export const generatePaymentRequest = async (req, res) => {
 
     return successResponse(
       res,
-      { payment, token: transaction.token },
-      `Payment request created for ${paymentMethod}`
+      {
+        payment: {
+          ...payment.toObject(),
+          requestedAt: formatDate(payment.requestedAt),
+        },
+        token: transaction.token,
+      },
+      `Payment request created for ${paymentMethod} on ${formatDate(
+        new Date()
+      )}`
     );
   } catch (error) {
     console.error("❌ Midtrans Payment Error:", error.message);

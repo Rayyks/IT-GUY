@@ -1,11 +1,13 @@
 import express from "express";
-import { protect, adminOrTech } from "../middlewares/authMiddleware.js";
+import { protect } from "../middlewares/authMiddleware.js";
 import upload from "../middlewares/uploadMiddleware.js";
 import {
   createBooking,
   getUserBookings,
   getBookingById,
   cancelBooking,
+  rescheduleBooking,
+  bookingStatusStream,
 } from "../controller/BOOKING/booking.controller.js";
 
 const router = express.Router();
@@ -26,5 +28,11 @@ router.get("/:id", protect, getBookingById);
 
 // 🔹 Cancel a booking (User only)
 router.put("/:id/cancel", protect, cancelBooking);
+
+// 🔹 Reschedule a booking (User only)
+router.put("/:bookingId/reschedule", protect, rescheduleBooking);
+
+// 🔹 Live Booking Status Updates (SSE)
+router.get("/:id/status-stream", bookingStatusStream);
 
 export default router;

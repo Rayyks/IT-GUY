@@ -1,4 +1,5 @@
 import Booking from "../../models/booking.js";
+import { formatDate } from "../../utils/formatDate.js";
 import { successResponse, errorResponse } from "../../utils/responseHandler.js";
 
 /**
@@ -12,9 +13,14 @@ export const getUserBookings = async (req, res) => {
       createdAt: -1,
     });
 
+    const formattedBookings = bookings.map((booking) => ({
+      ...booking.toObject(),
+      scheduleDate: formatDate(booking.scheduleDate),
+    }));
+
     return successResponse(
       res,
-      bookings,
+      formattedBookings,
       "User bookings retrieved successfully"
     );
   } catch (error) {

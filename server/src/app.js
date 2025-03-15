@@ -3,9 +3,15 @@ import path from "path";
 import cors from "cors";
 import dotenv from "dotenv";
 import morgan from "morgan";
+import helmet from "helmet";
+import mongoSanitize from "express-mongo-sanitize";
+import { body, validationResult } from "express-validator";
 import { errorHandler } from "./middlewares/errorHandler.js";
 
-// ROUTES IMPRORT
+// LIMITER
+import { generalLimiter } from "./middlewares/rateLimiter.js";
+
+// ROUTES IMPORT
 import authRoutes from "./routes/auth.routes.js";
 import userRoutes from "./routes/user.routes.js";
 import bookingRoutes from "./routes/booking.routes.js";
@@ -17,10 +23,36 @@ dotenv.config();
 
 const app = express();
 
-// Middleware
+// Security Middleware
+app.use(helmet()); // Secure HTTP headers
+app.use(mongoSanitize()); // Prevent NoSQL injections
 app.use(express.json());
-app.use(cors());
+
+// Input Sanitization Middleware
+app.use([
+  body("*").escape().trim(), // Sanitize all incoming request data
+  (req, res, next) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ message: "Invalid input detected" });
+    }
+    next();
+  },
+]);
+
+// CORS Configuration
+const corsOptions = {
+  origin: process.env.FRONTEND_URL,
+  credentials: true,
+};
+app.use(cors(corsOptions));
+
+// Logging & Rate Limiting
 app.use(morgan("dev"));
+app.use(generalLimiter);
+
+// Hide Express Info
+app.disable("x-powered-by");
 
 // Serve uploads folder as static
 app.use("/uploads", express.static(path.join(process.cwd(), "src/uploads")));

@@ -1,5 +1,6 @@
 import express from "express";
 import { protect } from "../middlewares/authMiddleware.js";
+import { authLimiter } from "../middlewares/rateLimiter.js";
 import {
   registerUser,
   loginUser,
@@ -7,15 +8,21 @@ import {
   resendOTP,
   requestAccountDeletion,
   cancelAccountDeletion,
-} from "../controller/auth.controller.js";
+  requestPasswordReset,
+  resetPassword,
+} from "../controller/AUTH/auth.controller.js";
 
 const router = express.Router();
 
 // Public routes
-router.post("/register", registerUser);
-router.post("/login", loginUser);
-router.post("/verify-otp", verifyOTP);
-router.post("/resend-otp", resendOTP);
+router.post("/register", authLimiter, registerUser);
+router.post("/login", authLimiter, loginUser);
+router.post("/verify-otp", authLimiter, verifyOTP);
+router.post("/resend-otp", authLimiter, resendOTP);
+
+// Private routes (Require authentication)
+router.post("/request-password-reset", authLimiter, requestPasswordReset);
+router.post("/reset-password", authLimiter, resetPassword);
 
 // Private routes (Require authentication)
 router.post("/delete", protect, requestAccountDeletion);

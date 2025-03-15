@@ -2,37 +2,12 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="./vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Document</title>
-    <script
-      type="text/javascript"
-      src="https://app.sandbox.midtrans.com/snap/snap.js"
-      data-client-key="SB-Mid-client-hBFyILOlwpDMszvr"
-    ></script>
+    <title>IT.GUY | DASHBOARD</title>
   </head>
   <body>
-    <button id="pay-button">Bayar Sekarang</button>
-
-    <script>
-      document.getElementById("pay-button").onclick = function () {
-        // Token pembayaran dari backend
-        const snapToken = "ca0925e2-5ff0-436c-9d0d-5bf810210107";
-
-        window.snap.pay(snapToken, {
-          onSuccess: function (result) {
-            console.log("✅ Pembayaran sukses!", result);
-            alert("Pembayaran berhasil!");
-          },
-          onPending: function (result) {
-            console.log("⏳ Pembayaran tertunda!", result);
-            alert("Pembayaran sedang diproses.");
-          },
-          onError: function (result) {
-            console.log("❌ Pembayaran gagal!", result);
-            alert("Pembayaran gagal, coba lagi.");
-          },
-        });
-      };
-    </script>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>
