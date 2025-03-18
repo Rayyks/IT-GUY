@@ -16,6 +16,8 @@ import {
   updateMaxDailyBookings,
 } from "../controller/ADMIN/admin.controller.js";
 
+import uploadMedia from "../middlewares/uploadRepairMedia.js";
+
 const router = express.Router();
 
 // Register admin (ADMIN WILL BE REGISTERED MANUALLY BY THE DEVELOPER)
@@ -28,7 +30,13 @@ router.get("/bookings", protect, adminOrTech, getAllBookings);
 router.get("/bookings/:id", protect, adminOrTech, getUserBookById);
 
 // Update booking status (Admin/Tech)
-router.put("/bookings/:id/status", protect, adminOrTech, updateBookingStatus);
+router.put(
+  "/bookings/:id/status",
+  protect,
+  adminOrTech,
+  uploadMedia,
+  updateBookingStatus
+);
 
 // Set total amount for a booking (Admin/Tech)
 router.put("/bookings/:id/amount", protect, adminOrTech, setTotalAmount);

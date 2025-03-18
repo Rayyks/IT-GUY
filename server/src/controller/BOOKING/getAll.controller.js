@@ -1,5 +1,5 @@
 import Booking from "../../models/booking.js";
-import { formatDate } from "../../utils/formatDate.js";
+import { formatIndonesianDate } from "../../utils/formatIndonesianDate.js";
 import { successResponse, errorResponse } from "../../utils/responseHandler.js";
 
 /**
@@ -15,7 +15,7 @@ export const getUserBookings = async (req, res) => {
 
     const formattedBookings = bookings.map((booking) => ({
       ...booking.toObject(),
-      scheduleDate: formatDate(booking.scheduleDate),
+      scheduleDate: formatIndonesianDate(booking.scheduleDate),
     }));
 
     return successResponse(

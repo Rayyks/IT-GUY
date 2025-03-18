@@ -1,6 +1,6 @@
 import Booking from "../../models/booking.js";
 import Payment from "../../models/payment.js";
-import { formatDate } from "../../utils/formatDate.js";
+import { formatIndonesianDate } from "../../utils/formatIndonesianDate.js";
 import { successResponse, errorResponse } from "../../utils/responseHandler.js";
 
 /**
@@ -32,7 +32,16 @@ export const getBookingById = async (req, res) => {
 
     const bookingData = {
       ...booking.toObject(),
-      scheduleDate: formatDate(booking.scheduleDate),
+      scheduleDate: formatIndonesianDate(booking.scheduleDate),
+      image: booking.image,
+      video: booking.video,
+      repairStartDate: booking.repairStartDate
+        ? formatIndonesianDate(booking.repairStartDate)
+        : null,
+      repairEndDate: booking.repairEndDate
+        ? formatIndonesianDate(booking.repairEndDate)
+        : null,
+      repairMedia: booking.repairMedia,
       payment: payment ? payment.toObject() : null,
     };
 

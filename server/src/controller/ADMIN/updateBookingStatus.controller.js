@@ -8,7 +8,7 @@ import { formatIndonesianDate } from "../../utils/formatIndonesianDate.js";
 export const updateBookingStatus = async (req, res) => {
   try {
     const { id } = req.params;
-    const { status, techMessage } = req.body;
+    const { status, techMessage, repairMedia } = req.body;
 
     const isObjectId = mongoose.Types.ObjectId.isValid(id);
     const query = isObjectId ? { _id: id } : { bookingId: id };
@@ -28,16 +28,26 @@ export const updateBookingStatus = async (req, res) => {
 
     // Update repairStartDate when status is 'in-progress'
     if (status === "in-progress" && !booking.repairStartDate) {
-      booking.repairStartDate = new Date(); // Set the start date only once
+      booking.repairStartDate = new Date();
     }
 
     // Update repairEndDate when status is 'completed'
     if (status === "completed" && !booking.repairEndDate) {
-      booking.repairEndDate = new Date(); // Set the end date only once
+      booking.repairEndDate = new Date();
     }
 
     // Optional: Add techMessage to the booking if provided
     if (techMessage) booking.techMessage = techMessage;
+
+    // Handle newly uploaded files
+    if (req.files && req.files.length > 0) {
+      const newMedia = req.files.map((file) => ({
+        url: `/uploads/${file.filename}`,
+        type: file.mimetype.startsWith("image") ? "image" : "video",
+        uploadedAt: new Date(),
+      }));
+      booking.repairMedia.push(...newMedia);
+    }
 
     // Save the updated booking
     await booking.save();
@@ -62,6 +72,71 @@ export const updateBookingStatus = async (req, res) => {
         `✅ Notification stored for completed booking ${booking.bookingId}`
       );
     }
+
+    // Get the absolute base URL for media files
+    const baseUrl = process.env.BASE_URL || "https://itguy.com"; // Update with your actual domain
+
+    // Generate media HTML content for email
+    const generateMediaHTML = () => {
+      // If there's no repair media, return empty string
+      if (!booking.repairMedia || booking.repairMedia.length === 0) {
+        return "";
+      }
+
+      // Generate HTML for the media section - simple vertical list
+      let mediaHTML = `
+        <div style="margin-top: 20px; border-top: 1px solid #eee; padding-top: 20px;">
+          <h3 style="color: #2B3990; margin-bottom: 15px;">Repair Documentation:</h3>
+      `;
+
+      // Process each media item as a vertical list item
+      booking.repairMedia.forEach((media, index) => {
+        const isImage = media.type === "image";
+        const fullUrl = `${baseUrl}${media.url}`;
+        const date = new Date(media.uploadedAt).toLocaleDateString();
+
+        mediaHTML += `
+          <div style="margin-bottom: 20px; border: 1px solid #eee; border-radius: 8px; overflow: hidden; background-color: #f8f9fa;">
+            <div style="padding: 10px; background-color: #f0f0f0; border-bottom: 1px solid #eee;">
+              <strong>Item ${index + 1}</strong> - ${date}
+            </div>
+        `;
+
+        if (isImage) {
+          mediaHTML += `
+            <div style="padding: 15px; text-align: center;">
+              <a href="${fullUrl}" target="_blank" style="display: block;">
+                <img src="${fullUrl}" alt="Repair Image ${
+            index + 1
+          }" style="max-width: 100%; height: auto; border-radius: 4px; margin: 0 auto;">
+              </a>
+            </div>
+          `;
+        } else {
+          mediaHTML += `
+            <div style="padding: 25px 15px; text-align: center;">
+              <span style="font-size: 30px; display: block; margin-bottom: 10px;">🎬</span>
+              <a href="${fullUrl}" style="color: #2B3990; text-decoration: underline; font-weight: bold; display: block;" target="_blank">
+                View Video ${index + 1}
+              </a>
+            </div>
+          `;
+        }
+
+        mediaHTML += `
+          </div>
+        `;
+      });
+
+      mediaHTML += `
+        <p style="font-size: 13px; color: #777; margin-top: 15px;">
+          * Click on images or videos to view in browser. Some email clients may block media content for security reasons.
+        </p>
+      </div>
+      `;
+
+      return mediaHTML;
+    };
 
     // Prepare email content
     const subject = `🚀 Your Booking Status is Now '${status}'`;
@@ -110,6 +185,8 @@ export const updateBookingStatus = async (req, res) => {
             : ""
         }
       </div>
+      
+      ${generateMediaHTML()}
       
       <p>If you have any questions about this update, please feel free to contact our support team.</p>
       

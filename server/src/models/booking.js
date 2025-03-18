@@ -67,7 +67,6 @@ const bookingSchema = new mongoose.Schema(
     },
     scheduleDate: { type: Date, required: true },
 
-    // New fields
     repairStartDate: { type: Date, default: null },
     repairEndDate: { type: Date, default: null },
 
@@ -83,6 +82,19 @@ const bookingSchema = new mongoose.Schema(
       default: "pending",
     },
     paymentMethod: { type: String, required: true },
+    image: { type: String, default: null },
+    video: { type: String, default: null },
+    repairMedia: [
+      {
+        url: { type: String, required: true },
+        type: {
+          type: String,
+          enum: ["image", "video"],
+          required: true,
+        },
+        uploadedAt: { type: Date, default: Date.now },
+      },
+    ],
   },
   { timestamps: true }
 );

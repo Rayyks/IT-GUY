@@ -119,3 +119,45 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* CUSTOM TAILWINDCSS */
+@theme {
+  /* Custom Colors */
+  --brand: 221.2 83.2% 53.3%;
+  --brand-foreground: 0 0% 100%;
+
+  /* Container Max Width */
+  --max-width-container: 80rem;
+}
+
+/* Animations */
+@keyframes appear {
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes appear-zoom {
+  0% {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Apply Animations */
+.appear {
+  animation: appear 0.5s ease-out forwards;
+}
+
+.appear-zoom {
+  animation: appear-zoom 0.5s ease-out forwards;
+}

@@ -29,6 +29,8 @@ export const getUserBookById = async (req, res) => {
     const formattedBooking = {
       ...booking.toObject(),
       scheduleDate: formatIndonesianDate(booking.scheduleDate),
+      image: booking.image,
+      video: booking.video,
       repairStartDate: booking.repairStartDate
         ? formatIndonesianDate(booking.repairStartDate)
         : null,

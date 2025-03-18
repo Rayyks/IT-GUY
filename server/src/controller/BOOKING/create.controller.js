@@ -4,7 +4,7 @@ import Settings from "../../models/settings.js";
 import { successResponse, errorResponse } from "../../utils/responseHandler.js";
 import { generateUniqueId } from "../../utils/generateUniqueId.js";
 import { getImageUrl } from "../../utils/fileUpload.js";
-import { formatDate } from "../../utils/formatDate.js";
+import { formatIndonesianDate } from "../../utils/formatIndonesianDate.js";
 import { sendAdminBookingNotification } from "../../utils/emailService.js";
 
 export const createBooking = async (req, res) => {
@@ -90,17 +90,11 @@ export const createBooking = async (req, res) => {
       scheduleDate: { $gte: startOfDay, $lt: endOfDay },
     });
 
-    console.log(
-      `📅 Existing bookings on ${formatDate(bookingDate)}:`,
-      existingBookings
-    );
-    console.log(`⚠️ Max allowed for day ${dayOfWeek}:`, dailyLimit);
-
     if (existingBookings >= dailyLimit) {
       return errorResponse(
         res,
         {
-          message: `Bookings for ${formatDate(
+          message: `Bookings for ${formaIndonesiantDate(
             bookingDate
           )} are full. Please select another date.`,
         },
@@ -108,9 +102,20 @@ export const createBooking = async (req, res) => {
       );
     }
 
+    // **Extract uploaded files correctly**
+    let imageUrl = null;
+    let videoUrl = null;
+
+    if (req.files) {
+      if (req.files.image && req.files.image.length > 0) {
+        imageUrl = `/uploads/${req.files.image[0].filename}`;
+      }
+      if (req.files.video && req.files.video.length > 0) {
+        videoUrl = `/uploads/${req.files.video[0].filename}`;
+      }
+    }
+
     const bookingId = generateUniqueId("BOOKING");
-    const imageUrl = req.files?.image ? getImageUrl(req.files.image[0]) : null;
-    const videoUrl = req.files?.video ? getImageUrl(req.files.video[0]) : null;
 
     const newBooking = await Booking.create({
       bookingId,
@@ -123,13 +128,9 @@ export const createBooking = async (req, res) => {
       deliveryMethod: method === "drop-off" ? deliveryMethod : null,
       pickupMethod: method === "pickup" ? pickupMethod : null,
       clientLocation:
-        method === "on-site" || method === "pickup"
-          ? clientLocation
-          : deliveryMethod === "itguy-delivery"
-          ? clientLocation
-          : null,
-      image: imageUrl,
-      video: videoUrl,
+        method === "on-site" || method === "pickup" ? clientLocation : null,
+      image: imageUrl, // Store image path
+      video: videoUrl, // Store video path
       paymentMethod,
       pickupStatus: method === "pickup" ? "pending" : null,
       deliveryStatus:
@@ -158,10 +159,12 @@ export const createBooking = async (req, res) => {
       {
         booking: {
           ...newBooking.toObject(),
-          scheduleDate: formatDate(newBooking.scheduleDate),
+          scheduleDate: formatIndonesianDate(newBooking.scheduleDate),
         },
       },
-      `Booking created successfully for ${formatDate(newBooking.scheduleDate)}`,
+      `Booking created successfully for ${formatIndonesianDate(
+        newBooking.scheduleDate
+      )}`,
       201
     );
   } catch (error) {
