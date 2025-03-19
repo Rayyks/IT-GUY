@@ -45,7 +45,7 @@ const corsOptions = {
   origin: process.env.FRONTEND_URL,
   credentials: true,
 };
-app.use(cors(corsOptions));
+app.use(cors());
 
 // Logging & Rate Limiting
 app.use(morgan("dev"));

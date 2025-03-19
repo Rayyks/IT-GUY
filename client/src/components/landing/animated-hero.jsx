@@ -76,7 +76,7 @@ function Hero() {
                 Learn More <PhoneCall className="w-4 h-4" />
               </Button>
             </ScrollLink>
-            <Link to="/auth/signup">
+            <Link to="/auth/register">
               <Button size="lg" className="gap-4 cursor-pointer">
                 Sign up here <MoveRight className="w-4 h-4" />
               </Button>

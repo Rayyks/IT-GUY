@@ -1,7 +1,6 @@
 "use client";
-import { Hexagon, Github, Twitter } from "lucide-react";
 
-import { HelmetProvider } from "@/utils/HelmetProvider";
+import { Hexagon, Github, Twitter } from "lucide-react";
 import { Element as ScrollElement } from "react-scroll";
 import { Hero } from "@/components/landing/animated-hero";
 import { AboutTab } from "@/components/landing/about-tab";
@@ -14,11 +13,6 @@ import { Footer } from "@/components/landing/footer";
 const LandingPage = () => {
   return (
     <main>
-      <HelmetProvider
-        title="Landing"
-        content="Landing page, you can see the overview of the website here"
-      />
-
       <ScrollElement name="hero">
         <section className="block min-h-screen w-full">
           <Hero />

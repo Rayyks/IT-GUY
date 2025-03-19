@@ -9,7 +9,7 @@ import { generateOTP } from "../../utils/generateOTP.js";
 
 /**
  * @desc Register user
- * @route GET /api/auth/register
+ * @route POST /api/auth/register
  * @access Public
  */
 export const registerUser = async (req, res) => {
@@ -46,10 +46,19 @@ export const registerUser = async (req, res) => {
     // Send OTP email
     await sendOTPEmail(email, otpCode);
 
+    const userResponse = {
+      userId: newUser.userId,
+      name: newUser.name,
+      email: newUser.email,
+      username: newUser.username,
+      phone: newUser.phone,
+      location: newUser.location,
+    };
+
     return successResponse(
       res,
-      null,
-      "User registered. Check your email for the OTP.",
+      userResponse,
+      "User registered successfully. Check your email for the OTP.",
       201
     );
   } catch (error) {
